@@ -8,9 +8,9 @@ import org.springframework.core.env.Environment;
 public class ApplicationProperties {
 
     @Autowired
-    private Environment env;
+    private static Environment env;
 
-    public String getProperty(String key){
+    public static String getProperty(String key){
         return env.getProperty(key);
     }
 
