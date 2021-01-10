@@ -31,6 +31,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'org.json:json:20201115'
 }
 
 dependencyManagement {
