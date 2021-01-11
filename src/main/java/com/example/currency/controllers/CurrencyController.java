@@ -3,17 +3,18 @@ package com.example.currency.controllers;
 import com.example.currency.ApplicationProperties;
 import com.example.currency.api_clients.CurrencyApiClient;
 import com.example.currency.api_clients.GifApiClient;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,7 +34,8 @@ public class CurrencyController {
     GifApiClient gifApiClient;
 
     @GetMapping("/{currencyID}")
-    public BufferedImage compareToBaseCurrency(@PathVariable String currencyID) throws ParseException, IOException {
+    public void compareToBaseCurrency(@PathVariable String currencyID, HttpServletResponse response)
+            throws ParseException, IOException {
         String currencyApiKey = properties.getProperty("currency-api-key");
         String baseCurrency = properties.getProperty("base-currency");
         String gifApiKey = properties.getProperty("gif-api-key");
@@ -46,36 +48,23 @@ public class CurrencyController {
                 yesterday, currencyApiKey, baseCurrency, currencyID);
         double yesterdayRate = getCurrencyRateInBaseCurrency(
                 new JSONObject(jsonStringYesterdayRates), baseCurrency, currencyID);
-
         String jsonGIFString;
         if(todayRate >= yesterdayRate){
             jsonGIFString = gifApiClient.getGifJSON(gifApiKey, "rich", new Random().nextInt(10));
-            JSONObject jsonGIF = new JSONObject(jsonGIFString);
-            JSONArray data = jsonGIF.getJSONArray("data");
-            String id = data.getJSONObject(0).getString("id");
         }else{
             jsonGIFString = gifApiClient.getGifJSON(gifApiKey, "broke", new Random().nextInt(10));
-            JSONObject jsonGIF = new JSONObject(jsonGIFString);
-            JSONArray data = jsonGIF.getJSONArray("data");
-            String id = data.getJSONObject(0).getString("id");
         }
-        return getGIFObject(jsonGIFString);
+        InputStream inputStream = getGIFObject(jsonGIFString);
+        response.setContentType(MediaType.IMAGE_GIF_VALUE);
+        IOUtils.copy(inputStream, response.getOutputStream());
     }
 
-    private BufferedImage getGIFObject(String jsonGIFString) throws IOException {
+    private InputStream getGIFObject(String jsonGIFString) throws IOException {
         JSONObject jsonGIF = new JSONObject(jsonGIFString);
         JSONArray data = jsonGIF.getJSONArray("data");
         String id = data.getJSONObject(0).getString("id");
         String urlString = "https://i.giphy.com/media/" + id + "/giphy.gif";
-        URL url = new URL(urlString);
-        return ImageIO.read(url);
-    }
-
-    @GetMapping(value = "/gif", produces = "image/gif")
-    public @ResponseBody BufferedImage getGif() throws IOException {
-        String gifApiKey = properties.getProperty("gif-api-key");
-        String jsonGIFString = gifApiClient.getGifJSON(gifApiKey, "rich", new Random().nextInt(10));
-        return getGIFObject(jsonGIFString);
+        return new URL(urlString).openStream();
     }
 
     public String getYesterdayDateString() throws ParseException {
