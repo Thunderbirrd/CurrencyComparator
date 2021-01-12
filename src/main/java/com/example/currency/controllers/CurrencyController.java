@@ -33,6 +33,10 @@ public class CurrencyController {
     @Autowired
     GifApiClient gifApiClient;
 
+    /**
+     * @param currencyID - currency id: 3 upper case letters(USD, EUR, RUB etc)
+     * @param response is used for sending .gif image to user
+     **/
     @GetMapping("/{currencyID}")
     public void compareToBaseCurrency(@PathVariable String currencyID, HttpServletResponse response)
             throws ParseException, IOException {
@@ -59,6 +63,7 @@ public class CurrencyController {
         IOUtils.copy(inputStream, response.getOutputStream());
     }
 
+    // getting .gif image(from search request response string) to return this image to our user
     private InputStream getGIFObject(String jsonGIFString) throws IOException {
         JSONObject jsonGIF = new JSONObject(jsonGIFString);
         JSONArray data = jsonGIF.getJSONArray("data");
@@ -77,6 +82,7 @@ public class CurrencyController {
         return formatter.format(date);
     }
 
+    // getting currency rate relatively to base currency because base currency on https://openexchangerates.org/ is USD
     public double getCurrencyRateInBaseCurrency(JSONObject jsonTodayRates, String baseCurrency, String currency2){
         // Strange bug: program somehow makes third call of this function(when there are only 2 in my code)
         // with currency2 = "favicon.ico"

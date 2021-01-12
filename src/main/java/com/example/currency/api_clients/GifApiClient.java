@@ -8,8 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(url = "https://api.giphy.com/v1/gifs/search", name = "GIFs")
 public interface GifApiClient {
 
-    @GetMapping("?api_key={apiKey}&q={searchWord}&limit=1&offset={randPos}")
+    /**
+     * @param searchWord - text which will be placed in search string on GIPHY
+     * @param position - position of GIF image on page
+     **/
+    @GetMapping("?api_key={apiKey}&q={searchWord}&limit=1&offset={position}")
     String getGifJSON(@PathVariable String apiKey,
-                      @PathVariable String searchWord, @PathVariable Integer randPos);
+                      @PathVariable String searchWord, @PathVariable Integer position);
 
 }

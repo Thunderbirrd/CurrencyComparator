@@ -41,5 +41,7 @@ dependencyManagement {
 }
 
 test {
-    useJUnitPlatform()
+    useJUnitPlatform{
+        includeEngines 'junit-jupiter'
+    }
 }
